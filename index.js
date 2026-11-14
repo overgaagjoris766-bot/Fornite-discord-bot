@@ -148,7 +148,7 @@ async function start() {
     ),
     { body: commands }
   );
-
+  console.log("Discord probeert nu in te loggen...");
   await client.login(process.env.DISCORD_TOKEN);
 }
 
