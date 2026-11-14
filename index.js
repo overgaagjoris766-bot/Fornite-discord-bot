@@ -19,12 +19,20 @@ client.once("ready", () => {
   console.log("BOT ONLINE:", client.user.tag);
 });
 
-client.on("error", error => {
-  console.error("Discord fout:", error.code, error.message);
+client.on("shardReady", () => {
+  console.log("Discord Gateway is verbonden.");
 });
 
-client.on("shardError", error => {
-  console.error("Gateway fout:", error.code, error.message);
+client.on("shardDisconnect", (event) => {
+  console.log("Discord verbinding verbroken. Code:", event.code);
+});
+
+client.on("shardError", (error) => {
+  console.log("Gateway fout:", error.message);
+});
+
+client.on("error", (error) => {
+  console.log("Discord fout:", error.message);
 });
 
 async function start() {
@@ -33,22 +41,20 @@ async function start() {
   const token = process.env.DISCORD_TOKEN;
 
   if (!token) {
-    throw new Error("DISCORD_TOKEN ontbreekt in Render.");
+    throw new Error("DISCORD_TOKEN ontbreekt.");
   }
 
-  console.log("Token gevonden. Lengte:", token.length);
-  console.log("Discord login wordt gestart...");
-
   try {
+    const response = await fetch("https://discord.com/api/v10/gateway");
+    console.log("Discord API status:", response.status);
+    await response.text();
+
+    console.log("Discord login wordt gestart...");
     await client.login(token);
     console.log("Discord login geslaagd!");
   } catch (error) {
-    console.error("LOGIN FOUT:", error.code, error.message);
-    process.exit(1);
+    console.log("FOUT:", error.message);
   }
 }
 
-start().catch(error => {
-  console.error("START FOUT:", error.message);
-  process.exit(1);
-});
+start();
