@@ -1,5 +1,4 @@
 
-
 const http = require("node:http");
 
 const {
@@ -11,7 +10,7 @@ const {
   EmbedBuilder
 } = require("discord.js");
 
-// Kleine webserver voor Render
+// Render webserver
 const PORT = process.env.PORT || 3000;
 
 http.createServer((req, res) => {
@@ -21,10 +20,12 @@ http.createServer((req, res) => {
   console.log(`Webserver gestart op poort ${PORT}`);
 });
 
+// Discord bot
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
+// Commands
 const commands = [
   new SlashCommandBuilder()
     .setName("shop")
@@ -32,31 +33,35 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("tournaments")
-    .setDescription("Bekijk aankomende Fortnite toernooien")
+    .setDescription("Bekijk Fortnite toernooien")
 ].map(command => command.toJSON());
 
+// Fortnite shop ophalen
 async function getShop() {
   const response = await fetch(
     "https://itemshop.gg/api/v1/shop/fortnite"
   );
 
   if (!response.ok) {
-    throw new Error("Shop tijdelijk niet beschikbaar");
+    throw new Error("Fortnite Shop is tijdelijk niet beschikbaar");
   }
 
   return response.json();
 }
 
+// Bot online
 client.once("ready", () => {
   console.log(`Bot online: ${client.user.tag}`);
 });
 
+// Commands uitvoeren
 client.on("interactionCreate", async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
-  await interaction.deferReply();
-
   try {
+    await interaction.deferReply();
+
+    // SHOP
     if (interaction.commandName === "shop") {
       const result = await getShop();
       const shop = result.data;
@@ -80,32 +85,49 @@ client.on("interactionCreate", async interaction => {
       await interaction.editReply({ embeds: [embed] });
     }
 
-    if (interaction.commandName === "tournaments") {
+    // TOURNAMENTS
+    else if (interaction.commandName === "tournaments") {
       const embed = new EmbedBuilder()
         .setTitle("Fortnite EU Toernooien")
         .setDescription(
-          "Bekijk de officiële planning van aankomende Fortnite-toernooien."
+          "Bekijk de officiële planning van Fortnite-toernooien via de onderstaande link."
         )
         .setColor(0x3498db)
-        .setURL("https://www.fortnite.com/competitive/events");
+        .setURL("https://www.fortnite.com/competitive/events")
+        .setFooter({
+          text: "Officiële Fortnite Competitive-pagina"
+        });
 
       await interaction.editReply({ embeds: [embed] });
     }
+
   } catch (error) {
-    console.error(error);
-    await interaction.editReply(
-      "Er ging iets mis. Probeer het later opnieuw."
-    );
+    console.error("Command error:", error);
+
+    const message = {
+      content: "Er ging iets mis. Probeer het later opnieuw.",
+      embeds: []
+    };
+
+    if (interaction.deferred || interaction.replied) {
+      await interaction.editReply(message);
+    } else {
+      await interaction.reply({
+        content: message.content,
+        ephemeral: true
+      });
+    }
   }
 });
 
+// Bot starten
 async function start() {
   if (
     !process.env.DISCORD_TOKEN ||
     !process.env.CLIENT_ID ||
     !process.env.GUILD_ID
   ) {
-    throw new Error("Een Render environment variable ontbreekt.");
+    throw new Error("Een Environment Variable ontbreekt in Render.");
   }
 
   const rest = new REST({ version: "10" })
