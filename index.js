@@ -22,6 +22,12 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
+// Extra verbindingsinformatie
+client.on("debug", info => console.log("DEBUG:", info));
+client.on("warn", info => console.log("WARN:", info));
+client.on("shardError", error => console.log("SHARD ERROR:", error));
+client.on("shardDisconnect", event => console.log("DISCONNECT:", event));
+
 // Bot online
 client.once("ready", () => {
   console.log(`Bot online: ${client.user.tag}`);
@@ -116,7 +122,7 @@ client.on("interactionCreate", async interaction => {
   }
 });
 
-// Bot starten zonder commands opnieuw te registreren
+// Bot starten
 async function start() {
   console.log("Bot start...");
 
@@ -127,6 +133,8 @@ async function start() {
   console.log("Discord probeert nu in te loggen...");
 
   await client.login(process.env.DISCORD_TOKEN);
+
+  console.log("Login-aanvraag voltooid.");
 }
 
 start().catch(error => {
