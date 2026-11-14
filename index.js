@@ -20,21 +20,35 @@ client.once("ready", () => {
 });
 
 client.on("error", error => {
-  console.error("Discord fout:", error.message);
+  console.error("Discord fout:", error.code, error.message);
+});
+
+client.on("shardError", error => {
+  console.error("Gateway fout:", error.code, error.message);
 });
 
 async function start() {
   console.log("Bot start...");
 
-  if (!process.env.DISCORD_TOKEN) {
+  const token = process.env.DISCORD_TOKEN;
+
+  if (!token) {
     throw new Error("DISCORD_TOKEN ontbreekt in Render.");
   }
 
-  await client.login(process.env.DISCORD_TOKEN);
-  console.log("Discord login geslaagd!");
+  console.log("Token gevonden. Lengte:", token.length);
+  console.log("Discord login wordt gestart...");
+
+  try {
+    await client.login(token);
+    console.log("Discord login geslaagd!");
+  } catch (error) {
+    console.error("LOGIN FOUT:", error.code, error.message);
+    process.exit(1);
+  }
 }
 
 start().catch(error => {
-  console.error("LOGIN FOUT:", error.message);
+  console.error("START FOUT:", error.message);
   process.exit(1);
 });
