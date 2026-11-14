@@ -20,7 +20,7 @@ http.createServer((req, res) => {
   console.log(`Webserver gestart op poort ${PORT}`);
 });
 
-// Discord client
+// Discord bot
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
@@ -49,13 +49,14 @@ async function getShop() {
   return response.json();
 }
 
-// Discord events
+// Bot online
 client.once("ready", () => {
   console.log(`Bot online: ${client.user.tag}`);
 });
 
+// Discord foutmeldingen
 client.on("error", error => {
-  console.error("Discord verbindingsfout:", error);
+  console.error("Discord fout:", error);
 });
 
 // Commands uitvoeren
@@ -147,10 +148,13 @@ async function start() {
   }
 
   console.log("Environment Variables gevonden.");
-  console.log("Slash commands registreren...");
 
-  const rest = new REST({ version: "10" })
-    .setToken(process.env.DISCORD_TOKEN);
+  const rest = new REST({
+    version: "10",
+    timeout: 15000
+  }).setToken(process.env.DISCORD_TOKEN);
+
+  console.log("Slash commands registreren...");
 
   await rest.put(
     Routes.applicationGuildCommands(
