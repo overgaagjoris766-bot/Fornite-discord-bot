@@ -22,26 +22,17 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-// Extra verbindingsinformatie
-client.on("debug", info => console.log("DEBUG:", info));
-client.on("warn", info => console.log("WARN:", info));
-client.on("shardError", error => console.log("SHARD ERROR:", error));
-client.on("shardDisconnect", event => console.log("DISCONNECT:", event));
+client.on("warn", info => console.warn("Discord waarschuwing:", info));
+client.on("shardError", error => console.error("Discord shard-fout:", error));
+client.on("error", error => console.error("Discord fout:", error));
 
-// Bot online
 client.once("ready", () => {
   console.log(`Bot online: ${client.user.tag}`);
 });
 
-client.on("error", error => {
-  console.error("Discord fout:", error);
-});
-
 // Fortnite shop ophalen
 async function getShop() {
-  const response = await fetch(
-    "https://itemshop.gg/api/v1/shop/fortnite"
-  );
+  const response = await fetch("https://itemshop.gg/api/v1/shop/fortnite");
 
   if (!response.ok) {
     throw new Error("Fortnite Shop is tijdelijk niet beschikbaar");
@@ -73,16 +64,11 @@ client.on("interactionCreate", async interaction => {
         embed.setImage(shop.images[0]);
       }
 
-      embed.setFooter({
-        text: "Data from itemshop.gg"
-      });
+      embed.setFooter({ text: "Data from itemshop.gg" });
 
-      await interaction.editReply({
-        embeds: [embed]
-      });
-    }
+      await interaction.editReply({ embeds: [embed] });
 
-    else if (interaction.commandName === "tournaments") {
+    } else if (interaction.commandName === "tournaments") {
       const embed = new EmbedBuilder()
         .setTitle("🏆 Fortnite EU Toernooien")
         .setDescription(
@@ -94,13 +80,9 @@ client.on("interactionCreate", async interaction => {
           value: "Europe (EU)"
         })
         .setURL("https://www.fortnite.com/competitive/events")
-        .setFooter({
-          text: "Officiële Fortnite Competitive-pagina"
-        });
+        .setFooter({ text: "Officiële Fortnite Competitive-pagina" });
 
-      await interaction.editReply({
-        embeds: [embed]
-      });
+      await interaction.editReply({ embeds: [embed] });
     }
 
   } catch (error) {
@@ -131,10 +113,7 @@ async function start() {
   }
 
   console.log("Discord probeert nu in te loggen...");
-
   await client.login(process.env.DISCORD_TOKEN);
-
-  console.log("Login-aanvraag voltooid.");
 }
 
 start().catch(error => {
