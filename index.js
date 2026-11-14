@@ -4,9 +4,6 @@ const http = require("node:http");
 const {
   Client,
   GatewayIntentBits,
-  REST,
-  Routes,
-  SlashCommandBuilder,
   EmbedBuilder
 } = require("discord.js");
 
@@ -25,16 +22,14 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-// Slash commands
-const commands = [
-  new SlashCommandBuilder()
-    .setName("shop")
-    .setDescription("Bekijk de Fortnite Item Shop"),
+// Bot online
+client.once("ready", () => {
+  console.log(`Bot online: ${client.user.tag}`);
+});
 
-  new SlashCommandBuilder()
-    .setName("tournaments")
-    .setDescription("Bekijk Fortnite EU-toernooien")
-].map(command => command.toJSON());
+client.on("error", error => {
+  console.error("Discord fout:", error);
+});
 
 // Fortnite shop ophalen
 async function getShop() {
@@ -48,16 +43,6 @@ async function getShop() {
 
   return response.json();
 }
-
-// Bot online
-client.once("ready", () => {
-  console.log(`Bot online: ${client.user.tag}`);
-});
-
-// Discord foutmeldingen
-client.on("error", error => {
-  console.error("Discord fout:", error);
-});
 
 // Commands uitvoeren
 client.on("interactionCreate", async interaction => {
@@ -131,7 +116,7 @@ client.on("interactionCreate", async interaction => {
   }
 });
 
-// Bot starten
+// Bot starten zonder commands opnieuw te registreren
 async function start() {
   console.log("Bot start...");
 
@@ -139,37 +124,9 @@ async function start() {
     throw new Error("DISCORD_TOKEN ontbreekt.");
   }
 
-  if (!process.env.CLIENT_ID) {
-    throw new Error("CLIENT_ID ontbreekt.");
-  }
-
-  if (!process.env.GUILD_ID) {
-    throw new Error("GUILD_ID ontbreekt.");
-  }
-
-  console.log("Environment Variables gevonden.");
-
-  const rest = new REST({
-    version: "10",
-    timeout: 15000
-  }).setToken(process.env.DISCORD_TOKEN);
-
-  console.log("Slash commands registreren...");
-
-  await rest.put(
-    Routes.applicationGuildCommands(
-      process.env.CLIENT_ID,
-      process.env.GUILD_ID
-    ),
-    { body: commands }
-  );
-
-  console.log("Slash commands geregistreerd.");
   console.log("Discord probeert nu in te loggen...");
 
   await client.login(process.env.DISCORD_TOKEN);
-
-  console.log("Discord login gelukt!");
 }
 
 start().catch(error => {
