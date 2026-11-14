@@ -20,7 +20,7 @@ http.createServer((req, res) => {
   console.log(`Webserver gestart op poort ${PORT}`);
 });
 
-// Discord bot
+// Discord client
 const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
@@ -36,7 +36,7 @@ const commands = [
     .setDescription("Bekijk Fortnite EU-toernooien")
 ].map(command => command.toJSON());
 
-// Fortnite Item Shop ophalen
+// Fortnite shop ophalen
 async function getShop() {
   const response = await fetch(
     "https://itemshop.gg/api/v1/shop/fortnite"
@@ -49,9 +49,13 @@ async function getShop() {
   return response.json();
 }
 
-// Bot is online
+// Discord events
 client.once("ready", () => {
   console.log(`Bot online: ${client.user.tag}`);
+});
+
+client.on("error", error => {
+  console.error("Discord verbindingsfout:", error);
 });
 
 // Commands uitvoeren
@@ -61,7 +65,6 @@ client.on("interactionCreate", async interaction => {
   try {
     await interaction.deferReply();
 
-    // SHOP
     if (interaction.commandName === "shop") {
       const result = await getShop();
       const shop = result.data;
@@ -87,7 +90,6 @@ client.on("interactionCreate", async interaction => {
       });
     }
 
-    // TOURNAMENTS
     else if (interaction.commandName === "tournaments") {
       const embed = new EmbedBuilder()
         .setTitle("🏆 Fortnite EU Toernooien")
@@ -130,13 +132,22 @@ client.on("interactionCreate", async interaction => {
 
 // Bot starten
 async function start() {
-  if (
-    !process.env.DISCORD_TOKEN ||
-    !process.env.CLIENT_ID ||
-    !process.env.GUILD_ID
-  ) {
-    throw new Error("Een Environment Variable ontbreekt in Render.");
+  console.log("Bot start...");
+
+  if (!process.env.DISCORD_TOKEN) {
+    throw new Error("DISCORD_TOKEN ontbreekt.");
   }
+
+  if (!process.env.CLIENT_ID) {
+    throw new Error("CLIENT_ID ontbreekt.");
+  }
+
+  if (!process.env.GUILD_ID) {
+    throw new Error("GUILD_ID ontbreekt.");
+  }
+
+  console.log("Environment Variables gevonden.");
+  console.log("Slash commands registreren...");
 
   const rest = new REST({ version: "10" })
     .setToken(process.env.DISCORD_TOKEN);
@@ -148,11 +159,16 @@ async function start() {
     ),
     { body: commands }
   );
+
+  console.log("Slash commands geregistreerd.");
   console.log("Discord probeert nu in te loggen...");
+
   await client.login(process.env.DISCORD_TOKEN);
+
+  console.log("Discord login gelukt!");
 }
 
 start().catch(error => {
-  console.error("Bot kon niet starten:", error);
+  console.error("BOT START FOUT:", error);
   process.exit(1);
 });
