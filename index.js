@@ -47,7 +47,9 @@ async function start() {
   try {
     const response = await fetch("https://discord.com/api/v10/gateway");
     console.log("Discord API status:", response.status);
-    await response.text();
+    const body = await response.text();
+console.log("Discord antwoord:", body);
+console.log("Retry-After:", response.headers.get("retry-after"));
 
     console.log("Discord login wordt gestart...");
     await client.login(token);
