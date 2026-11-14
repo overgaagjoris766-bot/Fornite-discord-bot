@@ -25,7 +25,7 @@ const client = new Client({
   intents: [GatewayIntentBits.Guilds]
 });
 
-// Commands
+// Slash commands
 const commands = [
   new SlashCommandBuilder()
     .setName("shop")
@@ -33,10 +33,10 @@ const commands = [
 
   new SlashCommandBuilder()
     .setName("tournaments")
-    .setDescription("Bekijk Fortnite toernooien")
+    .setDescription("Bekijk Fortnite EU-toernooien")
 ].map(command => command.toJSON());
 
-// Fortnite shop ophalen
+// Fortnite Item Shop ophalen
 async function getShop() {
   const response = await fetch(
     "https://itemshop.gg/api/v1/shop/fortnite"
@@ -49,7 +49,7 @@ async function getShop() {
   return response.json();
 }
 
-// Bot online
+// Bot is online
 client.once("ready", () => {
   console.log(`Bot online: ${client.user.tag}`);
 });
@@ -82,23 +82,31 @@ client.on("interactionCreate", async interaction => {
         text: "Data from itemshop.gg"
       });
 
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({
+        embeds: [embed]
+      });
     }
 
     // TOURNAMENTS
     else if (interaction.commandName === "tournaments") {
       const embed = new EmbedBuilder()
-        .setTitle("Fortnite EU Toernooien")
+        .setTitle("🏆 Fortnite EU Toernooien")
         .setDescription(
-          "Bekijk de officiële planning van Fortnite-toernooien via de onderstaande link."
+          "Bekijk de officiële planning van Fortnite EU-toernooien via de link hieronder."
         )
         .setColor(0x3498db)
+        .addFields({
+          name: "🌍 Regio",
+          value: "Europe (EU)"
+        })
         .setURL("https://www.fortnite.com/competitive/events")
         .setFooter({
           text: "Officiële Fortnite Competitive-pagina"
         });
 
-      await interaction.editReply({ embeds: [embed] });
+      await interaction.editReply({
+        embeds: [embed]
+      });
     }
 
   } catch (error) {
